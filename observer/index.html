@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Document</title>
+	<script src="./observer.js"></script>
+</head>
+<body>
+	<script>
+		window.onload= () => {
+			const valueBox = document.getElementById('value')
+			const addBtn = document.getElementById('add')
+			const computedValueBox = document.getElementById('computed-value')
+			const initialState = {
+				count: 1,
+				test: 'test'
+			}
+			valueBox.innerText = initialState.count
+
+			// 创建目标
+			window.subject = new Subject(initialState)
+
+			// 点击事件改变state
+			addBtn.addEventListener('click',()=>{
+				const currentState = window.subject.getState()
+				console.log('currentState', currentState)
+				// 通过setState方法改变源数据
+				window.subject.setState({
+					...currentState,
+					count: currentState.count + 1
+				})
+			})
+
+			// 用于显示原始state对应的盒子监听
+			const observer1 = createObserver(window.subject, (subject)=>{
+				const newState = subject.getState()
+				console.log('observer1监听到状态变化', newState)
+				valueBox.innerText = newState.count
+			})
+
+			let multiObserver = null
+
+			// 订阅状态变化
+			function createObserverForMuiti() {
+				multiObserver = createObserver(window.subject, (subject) => {
+					const newState = subject.getState()
+					console.log('multiObserver监听到状态变化', newState)
+					computedValueBox.innerText = newState.count * 3
+				})
+			}
+			// 取消订阅
+			function removeObserverForMulti(observer) {
+				if ( multiObserver ) {
+					 window.subject.removeObserver(multiObserver)
+					 multiObserver = null
+				}
+			}
+
+			document.getElementById('computed-subscribe').addEventListener('click', createObserverForMuiti)
+			document.getElementById('computed-cancel').addEventListener('click', removeObserverForMulti)
+
+		}
+	</script>
+	<button id='minus'>减</button>
+	<span>值：<span id="value"></span></span>
+	<button id='add'>加</button>
+
+	<div class="content">填充内容</div>
+	<div class="content">填充内容</div>
+	<div class="content">填充内容</div>
+	<div class="content">填充内容</div>
+	<div class="content">填充内容</div>
+	<div class="content">填充内容</div>
+
+	<div>value * 3 <div id="computed-value"></div> </div>
+	<button id="computed-cancel">取消订阅</button>
+	<button id="computed-subscribe">开启订阅</button>
+</body>
+</html>
